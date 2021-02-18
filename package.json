@@ -1,10 +1,30 @@
 {
   "name": "webpack-critical-pages",
   "version": "0.0.2",
-  "main": "lib/index.js",
+  "description": "Automatically generate critical css for a well-defined paging structure on multiple entrypoints.",
+  "author": "Peter Waldert <peter@waldert.at>",
   "license": "MIT",
+  "keywords": [
+    "webpack",
+    "critical",
+    "entrypoints",
+    "utility"
+  ],
+  "main": "lib/index.js",
   "dependencies": {
     "bent": "^7.3.12",
     "penthouse": "^2.3.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.12.16",
+    "@babel/core": "^7.12.16",
+    "@babel/preset-env": "^7.12.16"
+  },
+  "scripts": {
+    "build": "babel src -d lib"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MrP01/webpack-critical-pages"
   }
 }
