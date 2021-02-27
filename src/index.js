@@ -69,9 +69,12 @@ export function extractCriticalCSS(base, apps, criticalPages) {
 
 export function loadEntrypoints(base, rootEntryPoints, apps) {
   for (let app of apps) {
+    if (app === null)
+      app = "";
     let appEntries = require(path.join(base, app, "entrypoints.json"));
     for (let entryName of Object.keys(appEntries)) {
-      rootEntryPoints[app + "/" + entryName] = "./" + path.join(app, appEntries[entryName].file);
+      let normalized = (app + "/" + entryName).replace(/^\/|\/$/g, '');
+      rootEntryPoints[normalized] = "./" + path.join(app, appEntries[entryName].file);
     }
   }
   return rootEntryPoints;
