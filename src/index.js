@@ -2,6 +2,7 @@ const penthouse = require("penthouse");
 const path = require("path");
 const fs = require("fs");
 const bent = require("bent");
+const crypto = require("crypto");
 
 const requestBuffer = bent("buffer");
 
