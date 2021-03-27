@@ -80,16 +80,15 @@ export function loadEntrypoints(base, rootEntryPoints, apps) {
   return rootEntryPoints;
 }
 
-export async function fetchPageEntries(pagesToPrecache) {
+export async function fetchPageEntries(pagesToPrecache, devServerUrl = "http://127.0.0.1:8000") {
   let extraManifestEntries = [];
   try {
-    let devServerUrl = process.env.DEV_SERVER_URL ? process.env.DEV_SERVER_URL : "http://127.0.0.1:8000";
     console.log("calculating page hashes from local dev server...");
-    for (var i = 0; i < pagesToPrecache.length; i++) {
-      var pagePath = pagesToPrecache[i];
-      var fullUrl = devServerUrl + pagePath;
-      var response = await requestBuffer(fullUrl);
-      var md5 = crypto.createHash("md5");
+    for (let i = 0; i < pagesToPrecache.length; i++) {
+      let pagePath = pagesToPrecache[i];
+      let fullUrl = devServerUrl + pagePath;
+      let response = await requestBuffer(fullUrl);
+      let md5 = crypto.createHash("md5");
       md5.update(response);
       extraManifestEntries.push({
         url: pagePath,
@@ -98,7 +97,7 @@ export async function fetchPageEntries(pagesToPrecache) {
     }
     console.log(extraManifestEntries);
   } catch (e) {
-    console.warn("Could not fetch entries, skipping.");
+    console.warn("Could not fetch entries, skipping.", e);
   }
   return extraManifestEntries;
 }
