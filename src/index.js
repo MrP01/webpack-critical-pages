@@ -6,7 +6,7 @@ const crypto = require("crypto");
 
 const requestBuffer = bent("buffer");
 
-export function extractCriticalCSS(base, apps, criticalPages, dist, webpackStats, language = "en", devServerUrl = "http://localhost:8000") {
+export function extractCriticalCSS(base, apps, criticalPages, source, destination, webpackStats, language = "en", devServerUrl = "http://localhost:8000") {
   for (const app of apps) {
     const appEntries = require(path.join(base, app, "entrypoints.json"));
     for (const entryName of Object.keys(appEntries)) {
@@ -24,7 +24,7 @@ export function extractCriticalCSS(base, apps, criticalPages, dist, webpackStats
     for (const grp of grps) {
       for (const file of grp) {
         if (/\.css$/.test(file.name)) {
-          cssString += fs.readFileSync(path.join(dist, file.path));
+          cssString += fs.readFileSync(path.join(source, file.path));
         }
       }
     }
@@ -45,7 +45,11 @@ export function extractCriticalCSS(base, apps, criticalPages, dist, webpackStats
       cssString: totalEntrypoints.map(getEntryPointCSS).join(""),
       ...penthouseOptions
     }).then(criticalCss => {
-      fs.writeFileSync(path.join(dist, page.entrypoint + ".critical.css"), criticalCss);
+      let target = path.join(destination, page.entrypoint + ".critical.css");
+      let dirname = path.dirname(target);
+      if (!fs.existsSync(dirname))
+        fs.mkdirSync(dirname, {recursive: true});
+      fs.writeFileSync(target, criticalCss);
       return startNewJob();
     }).catch(error => {
       console.log("Page fetch was unsuccessful! Error:", error);
