@@ -6,7 +6,7 @@ const crypto = require("crypto");
 
 const requestBuffer = bent("buffer");
 
-export function extractCriticalCSS(base, apps, criticalPages) {
+export function extractCriticalCSS(base, apps, criticalPages, dist, webpackStats, language = "en", devServerUrl = "http://localhost:8000") {
   for (const app of apps) {
     const appEntries = require(path.join(base, app, "entrypoints.json"));
     for (const entryName of Object.keys(appEntries)) {
@@ -16,9 +16,6 @@ export function extractCriticalCSS(base, apps, criticalPages) {
       });
     }
   }
-  const dist = path.resolve(process.argv[2]);
-  const webpackStats = require(path.resolve(process.argv[3]));
-  const lang = "en";  // language to use for fetching pages
   const penthouseOptions = {};
 
   function getEntryPointCSS(entrypoint) {
@@ -44,7 +41,7 @@ export function extractCriticalCSS(base, apps, criticalPages) {
     console.log(`extracting page ${page.exampleUrl}...`);
     const totalEntrypoints = page.hasOwnProperty("totalEntrypoints") ? page.totalEntrypoints : ["main"];
     return penthouse({
-      url: `http://localhost:3141/${lang}${page.exampleUrl}`,
+      url: `${devServerUrl}/${language}${page.exampleUrl}`,
       cssString: totalEntrypoints.map(getEntryPointCSS).join(""),
       ...penthouseOptions
     }).then(criticalCss => {
@@ -81,7 +78,7 @@ export function loadEntrypoints(base, rootEntryPoints, apps) {
   return rootEntryPoints;
 }
 
-export async function fetchPageEntries(pagesToPrecache, devServerUrl = "http://127.0.0.1:8000") {
+export async function fetchPageEntries(pagesToPrecache, devServerUrl = "http://localhost:8000") {
   let extraManifestEntries = [];
   try {
     console.log("calculating page hashes from local dev server...");
