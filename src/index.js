@@ -8,7 +8,7 @@ const requestBuffer = bent("buffer");
 
 export function getCriticalPages(base, apps) {
   const pages = [];
-  const rootEntries = require(join(base, "entrypoints.json"));
+  const rootEntries = require(path.join(base, "entrypoints.json"));
   for (const entryName of Object.keys(rootEntries)) {
     pages.push({
       entrypoint: entryName,

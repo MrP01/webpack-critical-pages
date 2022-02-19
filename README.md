@@ -81,3 +81,12 @@ module.exports = async () => {
   });
 }
 ```
+
+## Development
+
+To publish, run
+
+```bash
+yarn build
+yarn publish
+```
