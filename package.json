@@ -16,9 +16,9 @@
     "penthouse": "^2.3.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.12.16",
-    "@babel/core": "^7.12.16",
-    "@babel/preset-env": "^7.12.16"
+    "@babel/cli": "^7.17.3",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11"
   },
   "scripts": {
     "build": "babel src -d lib"
