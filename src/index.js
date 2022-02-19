@@ -6,7 +6,7 @@ const crypto = require("crypto");
 
 const requestBuffer = bent("buffer");
 
-export function extractCriticalCSS(
+export async function extractCriticalCSS(
   base,
   apps,
   criticalPages,
@@ -14,7 +14,8 @@ export function extractCriticalCSS(
   destination,
   webpackStats,
   language = "en",
-  devServerUrl = "http://localhost:8000"
+  devServerUrl = "http://localhost:8000",
+  penthouseOptions = {}
 ) {
   for (const app of apps) {
     const appEntries = require(path.join(base, app, "entrypoints.json"));
@@ -25,7 +26,6 @@ export function extractCriticalCSS(
       });
     }
   }
-  const penthouseOptions = {};
 
   function getEntryPointCSS(entrypoint) {
     let cssString = "";
@@ -67,13 +67,12 @@ export function extractCriticalCSS(
       });
   }
 
-  return Promise.all([startNewJob(), startNewJob(), startNewJob(), startNewJob()])
-    .then(() => {
-      console.log("all done!");
-    })
-    .catch((reason) => {
-      console.error("Error occured", reason);
-    });
+  try {
+    await Promise.all([startNewJob(), startNewJob(), startNewJob(), startNewJob()]);
+    console.log("all done!");
+  } catch (reason) {
+    console.error("Error occured", reason);
+  }
 }
 
 export function loadEntrypoints(base, rootEntryPoints, apps) {
