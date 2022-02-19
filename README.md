@@ -1,4 +1,5 @@
 # webpack-critical-pages
+
 [![npm version](https://badge.fury.io/js/webpack-critical-pages.svg)](https://badge.fury.io/js/webpack-critical-pages)
 
 Automatically generate critical css for a well-defined paging structure on multiple entrypoints.  
@@ -18,27 +19,25 @@ For each app, define an `entrypoints.json` file with the following structure:
     "file": "./pages/search/search.js",
     "exampleUrl": "/vocabulary/search/?q=friends",
     "totalEntrypoints": ["main", "vocabulary/search"]
-  },
+  }
 }
 ```
 
 You may then use this node script for generating the critical css directly in the desired output folder:
+
 ```js
 const criticalPages = require("webpack-critical-pages");
 
 const BASE = path.dirname(__dirname);
 const APPS = ["app1", "app2", "feedback"];
-const ROOT_PAGES = [
-  {entrypoint: "landingpage", exampleUrl: "/"},
-  {entrypoint: "privacypolicy", exampleUrl: "/privacy-policy/"},
-];
-
-criticalPages.extractCriticalCSS(BASE, APPS, ROOT_PAGES).then(() => {
+const pages = criticalPages.getCriticalPages(BASE, APPS);
+criticalPages.extractCriticalCSS(pages).then(() => {
   console.log("Finished.");
 });
 ```
 
 Retrieve webpack entrypoints from the defined json files like this:
+
 ```js
 const criticalPages = require("webpack-critical-pages");
 const entrypoints = criticalPages.loadEntrypoints(BASE, ROOT_ENTRYPOINTS, APPS);
@@ -46,6 +45,7 @@ const entrypoints = criticalPages.loadEntrypoints(BASE, ROOT_ENTRYPOINTS, APPS);
 
 If you want to use a service worker, this package also provides automatic generation of hashes from fetched page content
 to use in the fantastic workbox plugin for webpack. It will treat the dynamically generated pages as static content.
+
 ```js
 const path = require("path");
 const merge = require("webpack-merge");

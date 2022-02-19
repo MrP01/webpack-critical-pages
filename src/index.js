@@ -6,9 +6,28 @@ const crypto = require("crypto");
 
 const requestBuffer = bent("buffer");
 
+export function getCriticalPages(base, apps) {
+  const pages = [];
+  const rootEntries = require(join(base, "entrypoints.json"));
+  for (const entryName of Object.keys(rootEntries)) {
+    pages.push({
+      entrypoint: entryName,
+      exampleUrl: rootEntries[entryName].exampleUrl,
+    });
+  }
+  for (const app of apps) {
+    const appEntries = require(path.join(base, app, "entrypoints.json"));
+    for (const entryName of Object.keys(appEntries)) {
+      pages.push({
+        entrypoint: app + "/" + entryName,
+        exampleUrl: appEntries[entryName].exampleUrl,
+      });
+    }
+  }
+  return pages;
+}
+
 export async function extractCriticalCSS(
-  base,
-  apps,
   criticalPages,
   source,
   destination,
@@ -17,16 +36,6 @@ export async function extractCriticalCSS(
   devServerUrl = "http://localhost:8000",
   penthouseOptions = {}
 ) {
-  for (const app of apps) {
-    const appEntries = require(path.join(base, app, "entrypoints.json"));
-    for (const entryName of Object.keys(appEntries)) {
-      criticalPages.push({
-        entrypoint: app + "/" + entryName,
-        exampleUrl: appEntries[entryName].exampleUrl,
-      });
-    }
-  }
-
   function getEntryPointCSS(entrypoint) {
     let cssString = "";
     const grps = webpackStats.entryPoints[entrypoint];
