@@ -39,11 +39,9 @@ export async function extractCriticalCSS(
   function getEntryPointCSS(entrypoint) {
     let cssString = "";
     const grps = webpackStats.chunks[entrypoint];
-    for (const grp of grps) {
-      for (const file of grp) {
-        if (/\.css$/.test(file.name)) {
-          cssString += fs.readFileSync(path.join(source, file.path));
-        }
+    for (const file of grps) {
+      if (/\.css$/.test(file)) {
+        cssString += fs.readFileSync(path.join(source, language, webpackStats.assets[file].path));
       }
     }
     return cssString;
