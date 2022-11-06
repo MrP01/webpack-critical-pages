@@ -55,10 +55,9 @@ export async function extractCriticalCSS(
       return startNewJob();
     }
     console.log(`extracting page ${page.exampleUrl}...`);
-    const totalEntrypoints = page.hasOwnProperty("totalEntrypoints") ? page.totalEntrypoints : ["main"];
     return penthouse({
       url: `${devServerUrl}/${language}${page.exampleUrl}`,
-      cssString: totalEntrypoints.map(getEntryPointCSS).join(""),
+      cssString: getEntryPointCSS(page.entrypoint),
       ...penthouseOptions,
     })
       .then((criticalCss) => {
