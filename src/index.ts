@@ -7,9 +7,14 @@ import type { Contents } from "./webpack-bundle-tracker";
 
 const requestBuffer = bent("buffer");
 
+export function readJSON(filename: string) {
+  const contents = fs.readFileSync(filename, "utf8");
+  return JSON.parse(contents);
+}
+
 export function getCriticalPages(base: string, apps: string[]) {
   const pages = [];
-  const rootEntries = require(path.join(base, "entrypoints.json"));
+  const rootEntries = readJSON(path.join(base, "entrypoints.json"));
   for (const entryName of Object.keys(rootEntries)) {
     pages.push({
       entrypoint: entryName,
@@ -17,7 +22,7 @@ export function getCriticalPages(base: string, apps: string[]) {
     });
   }
   for (const app of apps) {
-    const appEntries = require(path.join(base, app, "entrypoints.json"));
+    const appEntries = readJSON(path.join(base, app, "entrypoints.json"));
     for (const entryName of Object.keys(appEntries)) {
       pages.push({
         entrypoint: app + "/" + entryName,
@@ -99,7 +104,7 @@ export function loadEntrypoints(
 ) {
   for (let app of apps) {
     if (app === null) app = "";
-    let appEntries = require(path.join(base, app, "entrypoints.json"));
+    let appEntries = readJSON(path.join(base, app, "entrypoints.json"));
     for (let entryName of Object.keys(appEntries)) {
       let normalized = (app + "/" + entryName).replace(/^\/|\/$/g, "");
       rootEntryPoints[normalized] =
