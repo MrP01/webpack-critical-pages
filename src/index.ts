@@ -1,12 +1,13 @@
-const penthouse = require("penthouse");
-const path = require("path");
-const fs = require("fs");
-const bent = require("bent");
-const crypto = require("crypto");
+import penthouse from "penthouse";
+import path from "path";
+import fs from "fs";
+import bent from "bent";
+import crypto, { type BinaryLike } from "crypto";
+import type { Contents } from "./webpack-bundle-tracker";
 
 const requestBuffer = bent("buffer");
 
-export function getCriticalPages(base, apps) {
+export function getCriticalPages(base: string, apps: string[]) {
   const pages = [];
   const rootEntries = require(path.join(base, "entrypoints.json"));
   for (const entryName of Object.keys(rootEntries)) {
@@ -28,20 +29,25 @@ export function getCriticalPages(base, apps) {
 }
 
 export async function extractCriticalCSS(
-  criticalPages,
-  source,
-  destination,
-  webpackStats,
+  criticalPages: {
+    entrypoint: string;
+    exampleUrl: any;
+  }[],
+  source: string,
+  destination: string,
+  webpackStats: Contents,
   language = "en",
   devServerUrl = "http://localhost:8000",
   penthouseOptions = {}
 ) {
-  function getEntryPointCSS(entrypoint) {
+  function getEntryPointCSS(entrypoint: string) {
     let cssString = "";
-    const grps = webpackStats.chunks[entrypoint];
+    const grps = webpackStats.chunks[entrypoint]!;
     for (const file of grps) {
       if (/\.css$/.test(file)) {
-        cssString += fs.readFileSync(path.join(source, language, webpackStats.assets[file].path));
+        cssString += fs.readFileSync(
+          path.join(source, language, webpackStats.assets[file]!.path)
+        );
       }
     }
     return cssString;
@@ -60,40 +66,53 @@ export async function extractCriticalCSS(
       cssString: getEntryPointCSS(page.entrypoint),
       ...penthouseOptions,
     })
-      .then((criticalCss) => {
+      .then((criticalCss: string) => {
         let target = path.join(destination, page.entrypoint + ".critical.css");
         let dirname = path.dirname(target);
         if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
         fs.writeFileSync(target, criticalCss);
         return startNewJob();
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         console.log("Page fetch was unsuccessful! Error:", error);
         process.exit(1);
       });
   }
 
   try {
-    await Promise.all([startNewJob(), startNewJob(), startNewJob(), startNewJob()]);
+    await Promise.all([
+      startNewJob(),
+      startNewJob(),
+      startNewJob(),
+      startNewJob(),
+    ]);
     console.log("all done!");
   } catch (reason) {
     console.error("Error occured", reason);
   }
 }
 
-export function loadEntrypoints(base, rootEntryPoints, apps) {
+export function loadEntrypoints(
+  base: string,
+  rootEntryPoints: { [key: string]: string },
+  apps: string[]
+) {
   for (let app of apps) {
     if (app === null) app = "";
     let appEntries = require(path.join(base, app, "entrypoints.json"));
     for (let entryName of Object.keys(appEntries)) {
       let normalized = (app + "/" + entryName).replace(/^\/|\/$/g, "");
-      rootEntryPoints[normalized] = "./" + path.join(app, appEntries[entryName].file);
+      rootEntryPoints[normalized] =
+        "./" + path.join(app, appEntries[entryName].file);
     }
   }
   return rootEntryPoints;
 }
 
-export async function fetchPageEntries(pagesToPrecache, devServerUrl = "http://localhost:8000") {
+export async function fetchPageEntries(
+  pagesToPrecache: string[],
+  devServerUrl = "http://localhost:8000"
+) {
   let extraManifestEntries = [];
   try {
     console.log("calculating page hashes from local dev server...");
@@ -102,7 +121,7 @@ export async function fetchPageEntries(pagesToPrecache, devServerUrl = "http://l
       let fullUrl = devServerUrl + pagePath;
       let response = await requestBuffer(fullUrl);
       let md5 = crypto.createHash("md5");
-      md5.update(response);
+      md5.update(response as BinaryLike);
       extraManifestEntries.push({
         url: pagePath,
         revision: md5.digest("hex"),
