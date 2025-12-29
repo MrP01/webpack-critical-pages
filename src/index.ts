@@ -95,7 +95,7 @@ export async function extractCriticalCSS(
 export function loadEntrypoints(
   base: string,
   rootEntryPoints: { [key: string]: string },
-  apps: string[]
+  apps: (string | null)[]
 ) {
   for (let app of apps) {
     if (app === null) app = "";
