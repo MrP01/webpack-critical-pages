@@ -5,11 +5,11 @@
     "": {
       "name": "webpack-critical-pages",
       "dependencies": {
+        "@types/bent": "^7.3.8",
         "bent": "^7.3.12",
         "penthouse": "^2.3.3",
       },
       "devDependencies": {
-        "@types/bent": "^7.3.8",
         "@types/bun": "^1.3.5",
       },
       "peerDependencies": {

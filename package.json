@@ -1,6 +1,6 @@
 {
   "name": "webpack-critical-pages",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Automatically generate critical css for a well-defined paging structure on multiple entrypoints.",
   "author": "Peter Waldert <peter@waldert.at>",
   "license": "MIT",
@@ -13,10 +13,10 @@
   "main": "src/index.ts",
   "dependencies": {
     "bent": "^7.3.12",
-    "penthouse": "^2.3.3"
+    "penthouse": "^2.3.3",
+    "@types/bent": "^7.3.8"
   },
   "devDependencies": {
-    "@types/bent": "^7.3.8",
     "@types/bun": "^1.3.5"
   },
   "repository": {
