@@ -43,35 +43,42 @@ export async function extractCriticalCSS(
   webpackStats: Contents,
   language = "en",
   devServerUrl = "http://localhost:8000",
-  penthouseOptions = {}
+  penthouseOptions = {},
+  concurrency = 4,
 ) {
+  const queue = [...criticalPages];
   function getEntryPointCSS(entrypoint: string) {
     let cssString = "";
     const grps = webpackStats.chunks[entrypoint]!;
     for (const file of grps) {
       if (/\.css$/.test(file)) {
         cssString += fs.readFileSync(
-          path.join(source, language, webpackStats.assets[file]!.path)
+          path.join(source, language, webpackStats.assets[file]!.path),
         );
       }
     }
     return cssString;
   }
 
-  function startNewJob() {
-    const page = criticalPages.pop();
+  function startNewJob(): Promise<void> {
+    const page = queue.pop();
     if (!page) {
       return Promise.resolve();
     } else if (page.exampleUrl == null) {
       return startNewJob();
     }
-    console.log(`extracting page ${page.exampleUrl}...`);
+    const url = `${devServerUrl}/${language}${page.exampleUrl}`;
+    console.log(`extracting page ${url} (${page.entrypoint})...`);
+    const started = Date.now();
     return penthouse({
-      url: `${devServerUrl}/${language}${page.exampleUrl}`,
+      url,
       cssString: getEntryPointCSS(page.entrypoint),
       ...penthouseOptions,
     })
       .then((criticalCss: string) => {
+        console.log(
+          `\u2713 ${url} in ${Date.now() - started}ms \u2192 ${criticalCss.length}b`,
+        );
         let target = path.join(destination, page.entrypoint + ".critical.css");
         let dirname = path.dirname(target);
         if (!fs.existsSync(dirname)) fs.mkdirSync(dirname, { recursive: true });
@@ -79,18 +86,16 @@ export async function extractCriticalCSS(
         return startNewJob();
       })
       .catch((error: Error) => {
-        console.log("Page fetch was unsuccessful! Error:", error);
-        process.exit(1);
+        console.error(
+          `\u2717 ${url} (${page.entrypoint}) failed after ${Date.now() - started}ms:`,
+          error,
+        );
+        throw error;
       });
   }
 
   try {
-    await Promise.all([
-      startNewJob(),
-      startNewJob(),
-      startNewJob(),
-      startNewJob(),
-    ]);
+    await Promise.all(Array.from({ length: concurrency }, startNewJob));
     console.log("all done!");
   } catch (reason) {
     console.error("Error occured", reason);
@@ -100,7 +105,7 @@ export async function extractCriticalCSS(
 export function loadEntrypoints(
   base: string,
   rootEntryPoints: { [key: string]: string },
-  apps: (string | null)[]
+  apps: (string | null)[],
 ) {
   for (let app of apps) {
     if (app === null) app = "";
@@ -116,7 +121,7 @@ export function loadEntrypoints(
 
 export async function fetchPageEntries(
   pagesToPrecache: string[],
-  devServerUrl = "http://localhost:8000"
+  devServerUrl = "http://localhost:8000",
 ) {
   let extraManifestEntries = [];
   try {
